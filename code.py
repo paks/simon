@@ -7,7 +7,13 @@ import pulseio
 import random
 import adafruit_dotstar
 
-# print(dir(board), os.uname()) # Print a little about ourselves
+print(dir(board), os.uname()) # Print a little about ourselves
+
+# Game speed levels
+SLOW = 1.25
+NORMAL = 0.75
+FAST = 0.25
+game_speed = NORMAL
 
 piezo = pulseio.PWMOut(board.A3, duty_cycle=(65536 // 2), frequency=440, variable_frequency=True)
 
@@ -15,21 +21,25 @@ piezo = pulseio.PWMOut(board.A3, duty_cycle=(65536 // 2), frequency=440, variabl
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 128, 0)
-pixels = adafruit_dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.1, auto_write=False)
-pixels.fill(BLACK) # Turn off the dotstar
-pixels.show()
 
-# Capacitive touch pins setup
+pixel = adafruit_dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.1, auto_write=False)
+def set_dotstar_color(color):
+    pixel.fill(color) # Turn off the dotstar
+    pixel.show()
+
+set_dotstar_color(BLACK)
+
+# Capacitive touch pads setup
 touches = [DigitalInOut(board.CAP0)]
 for p in (board.CAP1, board.CAP2, board.CAP3):
     touches.append(touchio.TouchIn(p))
 
-# Setup leds above the capacitive touch pins
+# Setup leds above the capacitive touch pads
 leds = []
 led = DigitalInOut(board.LED4)
 led.direction = Direction.OUTPUT
 leds.append(led) # Appended twice. Position '0' is not going to be used
-leds.append(led)
+leds.append(led) # This is to simplify the game code.
 for p in (board.LED5, board.LED6, board.LED7):
     led = DigitalInOut(p)
     led.direction = Direction.OUTPUT
@@ -80,8 +90,7 @@ def game_over():
         time.sleep(1 / tone_duration[1]) # Duration
         leds[led_index].value = False
     piezo.duty_cycle = 0
-    pixels.fill(RED)
-    pixels.show()
+    set_dotstar_color(RED)
 
 
 def play_note(frequency = 440, duration = 2):
@@ -92,18 +101,18 @@ def play_note(frequency = 440, duration = 2):
 
 def read_caps():
     """
-    Read the 4 capacitive touch pins in the ruler.
+    Read the 4 capacitive touch pads in the PyRuler.
 
-    This function wil read the 4 capacitive touch pins and
+    This function wil read the 4 capacitive touch pads and
     update the touches array with a boolean value. If the value
-    is True, the pin was touched. Otherwise, false.
+    is True, the pad was touched. Otherwise, false.
     [0] -> CAP0
     [1] -> CAP1
     [2] -> CAP2
     [3] -> CAP3
 
     Returns:
-    [Boolean]: A boolean array with True for the pins that were touche.
+    [Boolean]: A boolean array with True for the pads that were touched.
                Otherwise, False.
     """
     t0_count = 0
@@ -124,7 +133,7 @@ def read_caps():
 
 def read_cap():
     """
-    Returns the index of the capacitive touch pin that
+    Returns the index of the capacitive touch pad that
     was touched. Otherwise return zero.
 
     Return:
@@ -144,11 +153,11 @@ def read_cap():
         return 3
     if caps[3]:
         return 4
-    return 0
+    return 0      # No pad has been touched.
 
 def touched_action(index, duration = 2):
     """
-    Play the capacitive pin tone and turn on their respective led.
+    Play the capacitive pad tone and turn on the led above the pad.
     Used by both the player and the computer.
     """
     leds[index].value = True
@@ -156,42 +165,41 @@ def touched_action(index, duration = 2):
     play_note(f, duration)
     leds[index].value = False
 
-# This array contains the secuence of capacitive pins that need to be
-# touched by the palyer. A new pin number is added after each turn.
+# This array contains the secuence of capacitive pads that need to be
+# touched by the palyer. A new pad number is added after each turn.
 steps = []
 
 def show_steps():
     """
-    Show the steps (capacitive pins) that the player needs to touch
+    Show the steps (capacitive pads) that the player needs to touch
     to keep playing the game.
 
     At each step, ligh the led an play the tone associated with the led.
     """
     for i in steps:
-        touched_action(i, 1.25)
-        time.sleep(0.5)
+        touched_action(i, game_speed)
+        time.sleep(game_speed - 0.10)
 
 while True:
-    pin = random.randrange(1, 5)           # Posible values => 1,2,3, or 4
-    steps.append(pin)
+    pad = random.randrange(1, 5)           # Posible values => 1,2,3, or 4
+    steps.append(pad)
     print(steps)
     show_steps()                           # to the player
-    pixels.fill(GREEN)                     # Use the dotstar led to indicate the
-    pixels.show()                          # player that it's his/her turn to play.
+    set_dotstar_color(GREEN)               # Use the dotstar led to indicate the
+                                           # player that it's his/her turn to play.
     player_error = False
     for i in steps:                        # It's the player's turn to play
         touched_cap = 0
-        while not touched_cap:             # wait for the player to touch a capacitive pin
+        while not touched_cap:             # wait for the player to touch a capacitive pad
            touched_cap = read_cap()
         if touched_cap != i:               # Did the player touched the correct one?
             player_error = True            # Nope :( End the game
             break
         touched_action(touched_cap, 0.5)   # The player touched the right one. Let's go to the next one.
-    pixels.fill(BLACK)                     # Turn off the dotstar led
-    pixels.show()
+    set_dotstar_color(BLACK)               # Turn off the dotstar led
     if player_error:
         game_over()
-        while True:                        # The game is over. The player needs to reset the ruler to play again.
+        while True:                        # The game is over. The player needs to reset the PyRuler to play again.
             time.sleep(1)
     else:
         time.sleep(0.75)
