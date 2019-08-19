@@ -50,10 +50,10 @@ for led in leds:
     led.value = False
 
 # Some musical notes definitions
-NOTE_G3 = 196
-NOTE_A3 = 220
-NOTE_C4 = 262
-NOTE_B3 = 247
+#NOTE_G3 = 196
+#NOTE_A3 = 220
+#NOTE_C4 = 262
+#NOTE_B3 = 247
 NOTE_CS4 = 277
 NOTE_D4 = 294
 NOTE_DS4 = 311
@@ -66,7 +66,7 @@ NOTE_B4 = 494
 # Tones used in the game
 game_notes = [0, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_B4]
 # Game over tune. Each tuple has the note play and the duration in fractions of a second
-game_over_tones_duration = [(NOTE_E4, 2), (NOTE_DS4, 2), (NOTE_D4, 2), (NOTE_CS4, 2), (NOTE_CS4,8), (NOTE_D4, 8), (NOTE_DS4, 8), (NOTE_E4, 8)];
+game_over_tones_duration = [(NOTE_E4, 2), (NOTE_DS4, 2), (NOTE_D4, 2), (NOTE_CS4, 2), (NOTE_CS4,8), (NOTE_D4, 8), (NOTE_DS4, 8), (NOTE_E4, 8)]
 
 # Setup capacitive touch array
 cap_touches = [False, False, False, False]
@@ -76,7 +76,7 @@ def game_over():
     Notify the player that the game is over.
 
     The function will print "Game Over" in the serial console.
-    Then, turn the dotstart led red and play the game over tune.
+    Then, play the game over tune and turn the dotstar led red.
     """
     print("game over")
     for i,tone_duration in enumerate(game_over_tones_duration):
@@ -85,7 +85,7 @@ def game_over():
         else:
             piezo.frequency = tone_duration[0] # Tone
             piezo.duty_cycle = 65536 // 2
-        led_index = (i % 4) + 1;
+        led_index = (i % 4) + 1
         leds[led_index].value = True
         time.sleep(1 / tone_duration[1]) # Duration
         leds[led_index].value = False
@@ -94,6 +94,13 @@ def game_over():
 
 
 def play_note(frequency = 440, duration = 2):
+    """
+    Play a note in the piezo buzzer.
+
+    :param int frecuency: Frecuancy to play in Hertzs. Default 440 Hz
+    :param float duration: How long should the tone play in seconds. 
+                           The default is 2 secods.
+    """
     piezo.frequency = frequency
     piezo.duty_cycle = 65536 // 2  # On 50%
     time.sleep(duration)  # On
@@ -134,7 +141,9 @@ def read_caps():
 def read_cap():
     """
     Returns the index of the capacitive touch pad that
-    was touched. Otherwise return zero.
+    was touched. Otherwise return zero. If multiple pads 
+    are touched, the function would only return the first one
+    from left to right.
 
     Return:
     int: 0 -> nothing was touched.
@@ -159,6 +168,9 @@ def touched_action(index, duration = 2):
     """
     Play the capacitive pad tone and turn on the led above the pad.
     Used by both the player and the computer.
+
+    :param int index: The index of the PyRuler pad from 1 to 4. #1 is the first pad on the left.
+    :param float duration: how long should the tone play in seconds. The default is 2 secods
     """
     leds[index].value = True
     f = game_notes[index]
