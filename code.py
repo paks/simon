@@ -9,7 +9,7 @@ import adafruit_dotstar
 
 print(dir(board), os.uname()) # Print a little about ourselves
 
-# Game speed levels
+# Game speed options
 SLOW = 1.25
 NORMAL = 0.75
 FAST = 0.25
@@ -167,7 +167,7 @@ def read_cap():
 def touched_action(index, duration = 2):
     """
     Play the capacitive pad tone and turn on the led above the pad.
-    Used by both the player and the computer.
+    Used by both the player and the microcontroller.
 
     :param int index: The index of the PyRuler pad from 1 to 4. #1 is the first pad on the left.
     :param float duration: how long should the tone play in seconds. The default is 2 secods
@@ -186,7 +186,7 @@ def show_steps():
     Show the steps (capacitive pads) that the player needs to touch
     to keep playing the game.
 
-    At each step, ligh the led an play the tone associated with the led.
+    At each step, ligh the led an play the tone associated with the pad.
     """
     for i in steps:
         touched_action(i, game_speed)
