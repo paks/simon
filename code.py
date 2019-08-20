@@ -91,7 +91,7 @@ def play_note(frequency = 440, duration = 2):
     """
     Play a note in the piezo buzzer.
 
-    :param int frecuency: Frecuancy to play in Hertzs. Default 440 Hz
+    :param int frequency: Frequency to play in Hertzs. Default 440 Hz
     :param float duration: How long should the tone play in seconds. 
                            The default is 2 secods.
     """
@@ -139,13 +139,12 @@ def read_cap():
     are touched, the function would return only the value
     of the first one from left to right.
 
-    Return:
+    Returns:
     int: 0 -> nothing was touched.
          1 -> CAP0 was touched
          2 -> CAP1 was touched
          3 -> CAP2 was touched
          4 -> CAP3 was touched
-
     """
     caps = read_caps()
     if caps[0]:
@@ -164,14 +163,14 @@ def touched_action(index, duration = 2):
     Used by both the player and the microcontroller.
 
     :param int index: The index of the PyRuler pad from 1 to 4. #1 is the first pad on the left.
-    :param float duration: how long should the tone play in seconds. The default is 2 secods
+    :param float duration: how long should the tone play in seconds. The default is 2 seconds
     """
     leds[index].value = True
     f = game_notes[index]
     play_note(f, duration)
     leds[index].value = False
 
-# This array contains the secuence of capacitive pads that need to be
+# This array contains the secuence of capacitive pads that needs to be
 # touched by the palyer. A new pad number is added after each turn.
 steps = []
 
