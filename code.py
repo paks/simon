@@ -49,29 +49,23 @@ for p in (board.LED5, board.LED6, board.LED7):
 for led in leds:
     led.value = False
 
-# Some musical notes definitions
-#NOTE_G3 = 196
-#NOTE_A3 = 220
-#NOTE_C4 = 262
-#NOTE_B3 = 247
+# The musical notes used in the game
+NOTE_E3 = 165
 NOTE_CS4 = 277
 NOTE_D4 = 294
 NOTE_DS4 = 311
 NOTE_E4 = 330
-NOTE_F4 = 349
-NOTE_G4 = 392
 NOTE_A4 = 440
-NOTE_B4 = 494
 
 # Tones used in the game
-game_notes = [0, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_B4]
+game_notes = [0, NOTE_A4, NOTE_CS4, NOTE_E3, NOTE_E4]
 # Game over tune. Each tuple has the note play and the duration in fractions of a second
 game_over_tones_duration = [(NOTE_E4, 2), (NOTE_DS4, 2), (NOTE_D4, 2), (NOTE_CS4, 2), (NOTE_CS4,8), (NOTE_D4, 8), (NOTE_DS4, 8), (NOTE_E4, 8)]
 
 # Setup capacitive touch array
 cap_touches = [False, False, False, False]
 
-def game_over():
+def game_over_action():
     """
     Notify the player that the game is over.
 
@@ -142,8 +136,8 @@ def read_cap():
     """
     Returns the index of the capacitive touch pad that
     was touched. Otherwise return zero. If multiple pads 
-    are touched, the function would only return the first one
-    from left to right.
+    are touched, the function would return only the value
+    of the first one from left to right.
 
     Return:
     int: 0 -> nothing was touched.
@@ -183,35 +177,38 @@ steps = []
 
 def show_steps():
     """
-    Show the steps (capacitive pads) that the player needs to touch
+    Show the steps (capacitive pad leds) that the player needs to touch
     to keep playing the game.
 
-    At each step, ligh the led an play the tone associated with the pad.
+    At each step, turn on the led an play the tone associated with the pad.
     """
     for i in steps:
         touched_action(i, game_speed)
         time.sleep(game_speed - 0.10)
 
-while True:
-    pad = random.randrange(1, 5)           # Posible values => 1,2,3, or 4
+game_active = True
+while game_active:
+    pad = random.randrange(1, 5)             # Posible values => 1,2,3, or 4
     steps.append(pad)
     print(steps)
-    show_steps()                           # to the player
-    set_dotstar_color(GREEN)               # Use the dotstar led to indicate the
-                                           # player that it's his/her turn to play.
-    player_error = False
-    for i in steps:                        # It's the player's turn to play
+    show_steps()                             # to play to the player
+    set_dotstar_color(GREEN)                 # Indicate to the player that it's 
+                                             # his/her turn to play.
+
+    for i in steps:                          # It's the player's turn to play
         touched_cap = 0
-        while not touched_cap:             # wait for the player to touch a capacitive pad
+        while not touched_cap:               # wait for the player to touch a capacitive pad
            touched_cap = read_cap()
-        if touched_cap != i:               # Did the player touched the correct one?
-            player_error = True            # Nope :( End the game
-            break
-        touched_action(touched_cap, 0.5)   # The player touched the right one. Let's go to the next one.
-    set_dotstar_color(BLACK)               # Turn off the dotstar led
-    if player_error:
-        game_over()
-        while True:                        # The game is over. The player needs to reset the PyRuler to play again.
-            time.sleep(1)
-    else:
-        time.sleep(0.75)
+        if touched_cap == i:                 # Did the player touched the correct one?
+            touched_action(touched_cap, 0.5) # Yes! Play the tone and turn on the led for that pad. 
+        else:
+            game_active = False              # Nope :( End the game loop.
+                                             # The player's turn ended.
+    set_dotstar_color(BLACK)                 # Turn off the dotstar led
+    time.sleep(0.75)                         # Let the player rest for a little bit.
+
+                                             # We're out of the game loop.    
+game_over_action()                           # Notify the player that the game is over. 
+
+while True:                                  # The game is over. 
+    time.sleep(1)                            # The player needs to reset the PyRuler to play again.
