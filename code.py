@@ -1,3 +1,7 @@
+"""
+Symon game for the Adafruit PyRuler
+By Cesar Mendoza
+"""
 import os
 import board
 from digitalio import DigitalInOut, Direction
