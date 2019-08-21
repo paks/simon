@@ -2,9 +2,9 @@
 
 ## Overview
 The new Adafruit PyRuler comes with 4 capacitive touch pads. There 
-are for colored leds above the pads. This makes the PyRuler perfect 
-for implementing a Simon says game in Circuit Python. The libraries
-included in this project are for Circuit Python 4.x (bundle-4.x-mpy-20190815).
+are four colored leds above the pads. This makes the PyRuler perfect 
+for implementing a Simon says game in CircuitPython. The libraries
+included in this project are for CircuitPython 4.x (bundle-4.x-mpy-20190815).
 
 ## Project Parts
 * [Adafruit PyRuler](https://www.adafruit.com/product/4319)
